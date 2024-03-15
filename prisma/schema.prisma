@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AddressWork {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(100)
+  street          String            @db.VarChar(255)
+  number          Int
+  cep             String            @db.VarChar(9)
+  city            String            @db.VarChar(50)
+  state           String            @db.VarChar(50)
+  WorkManagement  WorkManagement[]
+  PresenceControl PresenceControl[]
+
+  @@unique(fields: [cep])
+  @@map("addresses_works")
+}
+
+model Contract {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(50)
+  employees Employee[]
+
+  @@map("contracts")
+}
+
+model Employee {
+  id                    Int                   @id @default(autoincrement())
+  ra                    String                @db.VarChar(8)
+  first_name            String                @db.VarChar(50)
+  last_name             String                @db.VarChar(50)
+  alternative_name      String                @db.VarChar(50)
+  admission_date        DateTime              @db.Date
+  salary                Decimal               @db.Decimal(12, 2)
+  lunch_cost            Decimal               @db.Decimal(10, 2)
+  ticket_cost           Decimal               @db.Decimal(10, 2)
+  payment_id            Int
+  contract_id           Int
+  position_id           Int
+  dinner                String                @db.VarChar(3)
+  lunch                 String                @db.VarChar(3)
+  total_cost            Decimal               @db.Decimal(12, 2)
+  contracts             Contract              @relation(fields: [contract_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contract")
+  payments              Payment               @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_payment")
+  positions             Position              @relation(fields: [position_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_position")
+  PresenceControl       PresenceControl[]
+  productivity_controls ProductivityControl[]
+
+  @@unique(fields: [ra])
+  @@map("employees")
+}
+
+model Macroservice {
+  id           Int          @id @default(autoincrement())
+  macroservice String       @db.VarChar(100)
+  subservices  Subservice[]
+
+  @@map("macroservices")
+}
+
+model Payment {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(50)
+  employees Employee[]
+
+  @@map("payments")
+}
+
+model Permission {
+  id          Int    @id @default(autoincrement())
+  access_name String @db.VarChar(50)
+  users       User[]
+
+  @@map("permissions")
+}
+
+model Position {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(50)
+  employees Employee[]
+
+  @@map("positions")
+}
+
+model PresenceControl {
+  id              Int         @id @default(autoincrement())
+  obra_id         Int
+  employee_id     Int
+  presence_date   DateTime    @db.Date
+  arrival_time    String      @db.VarChar(10)
+  employees       Employee    @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_employee")
+  addresses_works AddressWork @relation(fields: [obra_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_work")
+
+  @@map("presence_controls")
+}
+
+model ProductivityControl {
+  id                Int            @id @default(autoincrement())
+  employee_id       Int
+  obra_id           Int
+  place             String         @db.VarChar(50)
+  sub_id            Int
+  quantity          Int
+  weight            Int
+  created_at        DateTime       @db.Date
+  employees         Employee       @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_employee")
+  subservices       Subservice     @relation(fields: [sub_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subservice")
+  works_managements WorkManagement @relation(fields: [obra_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_work")
+
+  @@map("productivity_controls")
+}
+
+model Subservice {
+  id                    Int                   @id @default(autoincrement())
+  macro_id              Int
+  unit_id               Int
+  subservice            String                @db.VarChar(100)
+  macroservices         Macroservice          @relation(fields: [macro_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_macroservice")
+  units                 Unit                  @relation(fields: [unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_unit")
+  WorkManagement        WorkManagement[]
+  productivity_controls ProductivityControl[]
+
+  @@map("subservices")
+}
+
+model Unit {
+  id          Int          @id @default(autoincrement())
+  unit        String       @db.VarChar(30)
+  subservices Subservice[]
+
+  @@map("units")
+}
+
+model User {
+  id            Int        @id @default(autoincrement())
+  username      String     @db.VarChar(100)
+  first_name    String     @db.VarChar(50)
+  last_name     String     @db.VarChar(50)
+  password_hash String     @db.VarChar(255)
+  created_at    DateTime   @db.Timestamp(6)
+  permission_id Int
+  permissions   Permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_permission")
+
+  @@unique(fields: [username])
+  @@map("users")
+}
+
+model WorkManagement {
+  id                    Int                   @id @default(autoincrement())
+  obra_id               Int
+  place                 String                @db.VarChar(50)
+  ambient               String                @db.VarChar(50)
+  sub_id                Int
+  quantity              Int
+  weight                Int
+  subservices           Subservice            @relation(fields: [sub_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subservice")
+  addresses_works       AddressWork           @relation(fields: [obra_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_work")
+  productivity_controls ProductivityControl[]
+
+  @@map("works_managements")
+}
