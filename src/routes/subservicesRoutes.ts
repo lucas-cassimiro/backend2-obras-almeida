@@ -4,6 +4,7 @@ import { SubservicesController } from "@src/app/controllers/SubservicesControlle
 
 const subservicesRoutes = Router();
 
+subservicesRoutes.get("/", new SubservicesController().index);
 subservicesRoutes.get("/:id", new SubservicesController().show);
 
 export default subservicesRoutes;
