@@ -41,6 +41,7 @@ export const authMiddleware = async (
         next();
         
     } catch (error) {
-        return res.status(500).send({ message: "Não autorizado." });
+        console.log(error)
+        // return res.status(500).send({ message: "Não autorizado." });
     }
 };

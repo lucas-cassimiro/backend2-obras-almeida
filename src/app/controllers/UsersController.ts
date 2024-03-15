@@ -84,7 +84,8 @@ export class UsersController {
 
             return res.status(200).json({ user: userLogin, token: token });
         } catch (error) {
-            return res.status(500).send({ message: "Erro ao fazer login." });
+            // return res.status(500).send({ message: "Erro ao fazer login." });
+            console.log(error)
         }
     }
 
